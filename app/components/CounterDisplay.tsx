@@ -1,10 +1,14 @@
-import { StyleSheet, Text } from 'react-native'
+import { StyleSheet, Text } from 'react-native';
 
-export function CounterDisplay({count}: {count: number}){
+type Props = {
+  count: number;
+}
+
+export function CounterDisplay(props: Props){
 
     return (
       <Text style= {styles.counter}>
-        Toplam balık: {count}
+        Toplam balık: {props.count}
       </Text>
     )
   }
