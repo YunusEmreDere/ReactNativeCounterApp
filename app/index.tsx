@@ -1,40 +1,38 @@
-import React, { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { CounterButtons } from "./components/CounterButtons";
-import { CounterDisplay } from "./components/CounterDisplay";
-import { FishImage } from "./components/FishImage";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { registerRootComponent } from 'expo';
+import React from "react";
+import 'react-native-gesture-handler';
+import HomeScreen from "./components/HomeScreen";
+import InfoScreen from "./components/InfoScreen";
 
-export default function HomeScreen(){
-  const[count, setCount] = useState(0);
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
+export type RootStackParamList = {
+  Home: undefined;
+  Info: {
+    name:String;
+    description:String;
+  };
+};
+
+function App(){
   return(
-    <View style={styles.container}>
-      <Text style={styles.title}>Balık Sayacı</Text>
-
-      <FishImage/>
-
-      <CounterDisplay count={count}/>
-
-      <CounterButtons
-      onIncrease={() => setCount(count + 1)}
-      onDecrease={() => setCount(count - 1)}
-      onReset={() => setCount(0)}
-      />
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Home">
+        <Stack.Screen 
+        name="Home"
+        component={HomeScreen}
+        options={{title: 'Balık Sayacı'}}
+        />
+        <Stack.Screen
+        name="Info"
+        component={InfoScreen}
+        options={{title: 'Balık Hakkında'}}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor:"#E0F7FA",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
-  },
-  title:{
-    fontSize:20,
-    fontWeight:"bold",
-    marginBottom: 20,
-  },
-})
+registerRootComponent(App); 
