@@ -1,38 +1,103 @@
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { registerRootComponent } from 'expo';
-import React from "react";
-import 'react-native-gesture-handler';
-import HomeScreen from "./components/HomeScreen";
-import InfoScreen from "./components/InfoScreen";
+import { CounterButtons } from "@/components/CounterButtons";
+import { useCounter } from "@/components/CounterContext";
+import { CounterDisplay } from "@/components/CounterDisplay";
+import FishCards from "@/components/FishCards";
+import { FishImage } from "@/components/FishImage";
+import { fishList } from "@/components/fishData";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect } from "react";
+import { StyleSheet, Text, View } from "react-native";
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+export default function HomeScreen(){
 
-export type RootStackParamList = {
-  Home: undefined;
-  Info: {
-    name:String;
-    description:String;
-  };
-};
+const {count, setCount, index, setIndex} = useCounter();
 
-function App(){
+const currentFish = fishList[index];
+
+const handleIncrease = () => {
+    setCount(count + 1);
+    setIndex((index + 1) % fishList.length);
+  }
+
+  const handleDecrease = () => {
+    setCount(count - 1);
+    setIndex((index - 1 + fishList.length) % fishList.length)
+  }
+
+
+  const handleReset = () => {
+    setCount(0);
+    setIndex(0);
+  }
+
+  useEffect(() => {
+    console.log("Balik sayisi degisti:", count);
+  },[count]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const savedCount = await AsyncStorage.getItem('counter');
+      if (savedCount !== null){
+        setCount(parseInt(savedCount));
+      }
+
+      const saveIndex = await AsyncStorage.getItem('fishIndex');
+      if(saveIndex !== null){
+        setIndex(parseInt(saveIndex));
+      }
+    };
+    loadData()
+  },[])
+
+  useEffect(() => {
+    AsyncStorage.setItem('fishIndex', index.toString());
+  },[index]);
+
+  useEffect(() => {
+    AsyncStorage.setItem('counter', count.toString());
+  },[count]);
+
+  if(!currentFish){
+    return(
+        <View style={styles.container}>
+            <Text style = {styles.title}>
+                Veri Yükleniyor veya Boş
+            </Text>
+        </View>
+    );
+  }
+
   return(
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen 
-        name="Home"
-        component={HomeScreen}
-        options={{title: 'Balık Sayacı'}}
-        />
-        <Stack.Screen
-        name="Info"
-        component={InfoScreen}
-        options={{title: 'Balık Hakkında'}}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <View style={styles.container}>
+      <Text style={styles.title}>Balık Sayacı</Text>
+
+      <FishImage/>
+
+      <CounterDisplay count={count}/>
+
+      <CounterButtons
+      onIncrease={handleIncrease}
+      onDecrease={handleDecrease}
+      onReset={handleReset}
+      />
+
+      <FishCards
+      name={currentFish.name}
+      description={currentFish.description}
+      />
+    </View>
   )
 }
 
-registerRootComponent(App); 
+const styles = StyleSheet.create({
+    container:{
+       flex:1,
+       justifyContent:'center',
+       alignItems:'center', 
+    },
+    title:{
+        fontSize:24,
+        marginBottom:20,
+
+    }
+})
